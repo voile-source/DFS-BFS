@@ -34,3 +34,108 @@ ullddrurdllurdruldr
 所以在预处理的时候需要稍微做一下修改的小操作，存操作顺序是要逆序存且反向，假设从目标态到初始态的操作顺序是rrd，那么从初始态到目标态的操作顺序就
 是ull了，所以操作顺序需要逆序且反向。
 **/
+
+
+#include<iostream>
+#include<string>
+#include<cstring>
+#include<queue>
+#include<map>
+#include<algorithm>
+using namespace std;
+const int max_n=4e6+10;
+
+struct node{
+	string s;
+	string op;
+};
+
+int vis[max_n];
+map<int,string> path;
+int fac[]={1,1,2,6,24,120,720,5040,40320,362880};
+char c[4]={'d','u','r','l'};
+
+int contor(string s)
+{
+	int ans=0,cnt;
+	int len=s.size();
+	for(int i=0;i<len-1;i++){
+		cnt=0;
+		for(int j=i+1;j<len;j++){
+			if(s[j]<s[i])cnt++;
+		}
+		ans+=cnt*fac[len-i-1];
+	}
+	return ans;
+}
+
+string eight(string s,int t)
+{
+	char a[3][3];
+	int x,y;
+	for(int i=0;i<3;i++){
+		for(int j=0;j<3;j++){
+			a[i][j]=s[i*3+j];
+			if(a[i][j]=='x'){
+				x=i;
+				y=j;
+			}
+		}
+	}
+	int nx=x,ny=y; 
+	if(t==0)nx--; 
+	else if(t==1)nx++;
+	else if(t==2)ny--;
+	else if(t==3)ny++;
+	if(nx<0||ny<0||nx>=3||ny>=3)return "-1";
+	swap(a[x][y],a[nx][ny]); 
+	string k;
+	for(int i=0;i<3;i++){
+		for(int j=0;j<3;j++){
+			k+=a[i][j];
+		}
+	}
+	return k;
+}
+
+void bfs()
+{
+	queue<node> Q;
+	node a;
+	a.s="12345678x";
+	a.op="";
+	vis[contor(a.s)]=1;
+	Q.push(a); 
+	node p,q;
+	while(!Q.empty()){
+		p=Q.front();
+		Q.pop();
+		for(int i=0;i<4;i++){
+			q=p;
+			q.s=eight(q.s,i);
+			if(q.s=="-1")continue;	
+			if(vis[contor(q.s)])continue;
+			q.op=c[i]+q.op;
+			path[contor(q.s)]=q.op;
+			vis[contor(q.s)]=1;
+			Q.push(q);
+		}
+	}
+}
+
+int main()
+{
+	bfs();
+	char c;
+	while(cin>>c){
+		string s;
+		s+=c;
+		for(int i=0;i<8;i++){
+			cin>>c;
+			s+=c;
+		} 
+		int t=contor(s);
+		if(!vis[t])cout<<"unsolvable"<<endl;
+		else cout<<path[t]<<endl;
+	} 
+} 
