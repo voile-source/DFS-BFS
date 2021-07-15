@@ -136,6 +136,6 @@ int main()
 		} 
 		int t=contor(s);
 		if(!vis[t])cout<<"unsolvable"<<endl;
-		else cout<<path[t]<<endl;
+		else cout<<path[t]<<endl;;
 	} 
 } 
