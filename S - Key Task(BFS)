@@ -1,0 +1,136 @@
+/**
+The Czech Technical University is rather old — you already know that it celebrates 300 years of its existence in 2007. Some of the university buildings are old as well. And the navigation in old buildings can sometimes be a little bit tricky, because of strange long corridors that fork and join at absolutely unexpected places.
+
+The result is that some first-graders have often di?culties finding the right way to their classes. Therefore, the Student Union has developed a computer game to help the students to practice their orientation skills. The goal of the game is to find the way out of a labyrinth. Your task is to write a verification software that solves this game.
+
+The labyrinth is a 2-dimensional grid of squares, each square is either free or filled with a wall. Some of the free squares may contain doors or keys. There are four di?erent types of keys and doors: blue, yellow, red, and green. Each key can open only doors of the same color.
+
+You can move between adjacent free squares vertically or horizontally, diagonal movement is not allowed. You may not go across walls and you cannot leave the labyrinth area. If a square contains a door, you may go there only if you have stepped on a square with an appropriate key before.
+Input
+The input consists of several maps. Each map begins with a line containing two integer numbers R and C (1 ≤ R, C ≤ 100) specifying the map size. Then there are R lines each containing C characters. Each character is one of the following:
+
+
+
+
+Note that it is allowed to have
+more than one exit,
+
+no exit at all,
+
+more doors and/or keys of the same color, and
+
+keys without corresponding doors and vice versa.
+
+
+You may assume that the marker of your position (“*”) will appear exactly once in every map.
+
+There is one blank line after each map. The input is terminated by two zeros in place of the map size.
+Output
+For each map, print one line containing the sentence “Escape possible in S steps.”, where S is the smallest possible number of step to reach any of the exits. If no exit can be reached, output the string “The poor student is trapped!” instead.
+
+One step is defined as a movement between two adjacent cells. Grabbing a key or unlocking a door does not count as a step.
+Sample Input
+1 10
+*........X
+
+1 3
+*#X
+
+3 20
+####################
+#XY.gBr.*.Rb.G.GG.y#
+####################
+
+0 0
+Sample Output
+Escape possible in 9 steps.
+The poor student is trapped!
+Escape possible in 45 steps.
+
+解题思路：这题和胜利大逃亡 (续)很类似，只是条件稍微变换了一下，做法都是一样的，用二进制表示身上所携带的钥匙情况，然后bfs搜索判断是否能在限定时间内走到出口。
+**/
+
+#include<iostream>
+#include<cstring>
+#include<queue>
+using namespace std;
+const int max_n=110;
+
+struct node{
+	int x,y;
+	int step;
+	int key;
+}a;
+
+int b[26];
+int ne[4][2]={0,1,1,0,0,-1,-1,0};
+int vis[1<<6][max_n][max_n];
+char mp[max_n][max_n]; 
+int n,m,t;
+
+int fun(char c)
+{
+	switch(c){
+		case 'b': case 'B':
+			return 1<<1;
+		case 'y': case 'Y':
+			return 1<<2;
+		case 'r': case 'R':
+			return 1<<3;
+		case 'g': case 'G':
+			return 1<<4;
+	}
+}
+
+void bfs(node a)
+{
+	queue<node> Q;
+	Q.push(a);
+	vis[a.key][a.x][a.y]=1;
+	node p,q;
+	while(!Q.empty()){
+		p=Q.front();
+		Q.pop();
+		if(mp[p.x][p.y]=='X'){
+			cout<<"Escape possible in "<<p.step<<" steps."<<endl;
+			return ; 
+		}
+		for(int i=0;i<4;i++){
+			q=p;
+			q.x+=ne[i][0];
+			q.y+=ne[i][1];
+			if(q.x<0||q.x>=n||q.y<0||q.y>=m||vis[q.key][q.x][q.y])continue;
+			if(mp[q.x][q.y]=='#')continue;
+			if(mp[q.x][q.y]=='b'||mp[q.x][q.y]=='y'||mp[q.x][q.y]=='r'||mp[q.x][q.y]=='g') {
+				q.key|=fun(mp[q.x][q.y]);
+			}
+			if(mp[q.x][q.y]=='B'||mp[q.x][q.y]=='Y'||mp[q.x][q.y]=='R'||mp[q.x][q.y]=='G') {
+				if(!(q.key&fun(mp[q.x][q.y])))continue;
+			}
+			if(vis[q.key][q.x][q.y])continue;
+			vis[q.key][q.x][q.y]=1;
+			q.step++;
+			Q.push(q);
+		}
+	}
+	cout<<"The poor student is trapped!"<<endl;
+}
+
+int main()
+{
+	while(cin>>n>>m&&n&&m){
+		memset(vis,0,sizeof vis);
+		for(int i=0;i<n;i++){
+			for(int j=0;j<m;j++){
+				cin>>mp[i][j];
+				if(mp[i][j]=='*'){
+					a.x=i;
+					a.y=j;
+					a.step=0;
+					a.key=0;
+				}
+			}
+		}
+		bfs(a);
+	}	
+}
